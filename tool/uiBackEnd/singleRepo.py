@@ -71,8 +71,9 @@ def choiceOfRepo(value,auth,root):
     print(info_file_array)
 
     # print(repos_df)
-
-    # repos_df.to_csv('repos_info.csv', index = None)
+    filepath = repos_information[choice][1]
+    ddf = pd.DataFrame(info_file_array)
+    ddf.to_csv(filepath+'-info.csv', index = None)
 
     #Info About Commits
     temp_arr = ["","","",""]
@@ -110,8 +111,9 @@ def choiceOfRepo(value,auth,root):
         else:
             break
 
-    # commits_df = pd.DataFrame(commits_information, columns = ['Repo Id', 'Commit Id', 'Date', 'Message'])
-    # commits_df.to_csv('commits_info.csv', index = False)
+    filepath = repos_information[choice][1]
+    commits_df = pd.DataFrame(commits_information, columns = ['Repo Id', 'Commit Id', 'Date', 'Message'])
+    commits_df.to_csv(filepath+'-commits.csv', index = False)
     # print(commits_df)
 
     df = pd.DataFrame(info_file_array)

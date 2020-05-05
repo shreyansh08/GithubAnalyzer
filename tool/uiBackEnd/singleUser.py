@@ -236,6 +236,8 @@ def singleUserAnalysis(username,password,privateR):
     labels = []
     sizes = []
     for key,value in hm.items():
+        if key[0] == 'J' and key[1] == 'u' and key[2] == 'p':
+            continue 
         labels.append(key)
         sizes.append(value)
     
@@ -325,16 +327,16 @@ def singleUserAnalysis(username,password,privateR):
     contributor_repo_df.to_csv(filename)
     print(contributor_repo_df)
 
-    con = sqlite3.connect('DB1.db')
-    cur = con.cursor()
+    # con = sqlite3.connect('DB1.db')
+    # cur = con.cursor()
 
-    df1 = contributor_repo_df
-    df1.to_sql('Contributor' , con , if_exists = 'replace' , index = False)
+    # df1 = contributor_repo_df
+    # # df1.to_sql('Contributor' , con , if_exists = 'replace' , index = False)
 
-    data = pd.read_sql_query("SELECT LoginId, Id, (Contributions * 100)/Total + 0.0 as '% Code Ownership' FROM Contributor NATURAL JOIN (SELECT Id, sum(Contributions) As Total FROM Contributor GROUP BY Id)",con)
-    print('Repowise Code Ownership')
-    print('\n')
-    print(data)
+    # data = pd.read_sql_query("SELECT LoginId, Id, (Contributions * 100)/Total + 0.0 as '% Code Ownership' FROM Contributor NATURAL JOIN (SELECT Id, sum(Contributions) As Total FROM Contributor GROUP BY Id)",con)
+    # print('Repowise Code Ownership')
+    # print('\n')
+    # print(data)
 
     mess = "All data saved in the folder. Please check " + username + ".png to find prominent languages."
     tk.messagebox.showinfo("Finished !",mess)
