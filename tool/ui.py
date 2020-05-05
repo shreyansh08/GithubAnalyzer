@@ -28,7 +28,9 @@ def fetchSingleRepo(entries, vars, v, root):
     else:
         privateInc = 0
 
-    b4['state'] = 'disabled'
+    b1["state"] = "disabled"
+    b4["state"] = "disabled"
+    b5["state"] = "disabled"
     singleRepo.singleRepoAnalysis(username,password,privateInc)
 
 def fetchSingleUser(entries, vars, v, root):
@@ -51,7 +53,9 @@ def fetchSingleUser(entries, vars, v, root):
     else:
         privateInc = 0
 
-    b5['state'] = 'disabled'
+    b1["state"] = "disabled"
+    b4["state"] = "disabled"
+    b5["state"] = "disabled"
     singleUser.singleUserAnalysis(username,password,privateInc)
 
 def fetch(entries, vars, v, root):
@@ -159,23 +163,33 @@ def fetch(entries, vars, v, root):
     print(" ")
     print("Starting the Script")
     b1["state"] = "disabled"
-    # b2["state"] = "disabled"
+    b4["state"] = "disabled"
+    b5["state"] = "disabled"
     # x = input()
     root.destroy
     scriptToRun.code(topic,stars,forks,cont,rel)
 
 def showHelp():
-    subprocess.Popen("BTP-Paper.pdf",shell=True)
+    subprocess.Popen("help.pdf",shell=True)
 
 
 if __name__ == '__main__':
     root = tk.Tk()
-    root.geometry("400x450")
+    root.geometry("400x500")
+
+    row = tk.Frame(root)
+    row.pack(side=tk.TOP,anchor='w',padx=30)
+    b3 = tk.Button(row, text='Help',
+                  command=(showHelp))
+    b3.pack(side=tk.LEFT, padx=5, pady=5)
+    b2 = tk.Button(row, text='Quit', command=root.destroy)
+    b2.pack(side=tk.LEFT, padx=5, pady=5)
+
 
     v = tk.StringVar(root,"0")
     row = tk.Frame(root)
     row.pack(side=tk.TOP,anchor='w',padx=30)
-    Radiobutton(row,text="Big Data",variable=v,value="1").pack(side=tk.LEFT)
+    Radiobutton(row,text="Data-Set Creation",variable=v,value="1").pack(side=tk.LEFT)
     # root.bind("<Return>", (lambda event, e=ents, v=vars: fetch(e,v,root)))   
 
     entries = []
@@ -263,7 +277,7 @@ if __name__ == '__main__':
     
     row = tk.Frame(root, width = 400)
     row.pack(side=tk.TOP,anchor='w',padx=60)
-    lab = tk.Label(row,text="Access Code ")
+    lab = tk.Label(row,text="Access Token ")
     lab.pack(side=tk.LEFT)
     ent = tk.Entry(row)
     ent.pack(side=tk.LEFT, expand=tk.YES, fill=tk.X)
@@ -300,7 +314,7 @@ if __name__ == '__main__':
     
     row = tk.Frame(root, width = 400)
     row.pack(side=tk.TOP,anchor='w',padx=60)
-    lab = tk.Label(row,text="Access Code ")
+    lab = tk.Label(row,text="Access Token ")
     lab.pack(side=tk.LEFT)
     ent = tk.Entry(row)
     ent.pack(side=tk.LEFT, expand=tk.YES, fill=tk.X)
