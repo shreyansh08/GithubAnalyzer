@@ -176,14 +176,7 @@ def showHelp():
 if __name__ == '__main__':
     root = tk.Tk()
     root.geometry("400x500")
-
-    row = tk.Frame(root)
-    row.pack(side=tk.TOP,anchor='w',padx=30)
-    b3 = tk.Button(row, text='Help',
-                  command=(showHelp))
-    b3.pack(side=tk.LEFT, padx=5, pady=5)
-    b2 = tk.Button(row, text='Quit', command=root.destroy)
-    b2.pack(side=tk.LEFT, padx=5, pady=5)
+    root.title('GitInfoData')
 
 
     v = tk.StringVar(root,"0")
@@ -331,5 +324,13 @@ if __name__ == '__main__':
     b5 = tk.Button(row, text='Start',
                   command=(lambda e=entriesForUser, va=varsForUser, v=v: fetchSingleUser(e,va,v,root)))
     b5.pack(side=tk.LEFT, padx=5, pady=5)
+
+    row = tk.Frame(root)
+    row.pack(side=tk.TOP,anchor='w',padx=30)
+    b3 = tk.Button(row, text='Help',
+                  command=(showHelp))
+    b3.pack(side=tk.LEFT, padx=5, pady=5)
+    b2 = tk.Button(row, text='Quit', command=root.destroy)
+    b2.pack(side=tk.LEFT, padx=5, pady=5)
 
     root.mainloop()
