@@ -1,0 +1,583 @@
+,Created At,Updated At,Closed At,Merged At,Details,Id
+0,2020-02-10T11:26:11Z,2020-02-10T11:28:11Z,,,,9800119
+1,2020-02-08T08:27:18Z,2020-02-10T11:28:15Z,,,,9800119
+2,2020-02-04T13:01:08Z,2020-02-07T13:50:37Z,,,"I added a test that checks if acl’s are being honored. Your existing test ""test_acl_behaviour"" doesn't seem to check it in the right way.
+It is associated with commit https://github.com/lizardfs/lizardfs/commit/e391f55014c263ab09b9c223c45bf23bb82ad961
+ 
+It's very strange that this has not been created by LFS team already, as I believe it’s important to see in the future if it is broken and you didn't provide any documentation about your fix. It depends on what version of fuse you use/have and this is turn affects the OS that the user uses.
+ 
+You continue with 3.13 that is unstable but don't provide tests for your fixes and documentation. When looking at your jenkins (http://jenkins.lizardfs.org/) it frightens me.",9800119
+3,2018-09-03T07:48:36Z,2018-09-03T07:48:36Z,,,Allows setting `CSSERV_ADVERTISE_ADDR` so that the IP address advertised from a chunk server to a master can be different than the IP address the chunk server is listening on. This is mainly needed behind a NAT or when operating a chunk server within a Docker container. This resolves #721.,9800119
+4,2017-11-10T13:18:04Z,2018-05-11T19:31:27Z,,,"By sending a SIGUSR2 to a chunkserver process, a scrub loop is started (or aborted).
+Scrub will check all chunks for any inconsistencies (crc errors) and will mark any failed chunks as damaged, forcing LizardFS to fix them",9800119
+5,2017-10-28T05:30:37Z,2017-11-13T08:18:04Z,,,"service(like chunkserver, metalogger, etc) start with boot does not working. so i reger to MooseFS configure to solve it! In my system, it works well.
+PS: (some commit is my own change, i do not know how to remove it)",9800119
+6,2017-02-27T11:26:05Z,2017-05-20T10:42:59Z,,,"Currently when reading chunks from chunkservers, there is no way to
+prioritize fast chunkservers running on SSDs over slow chunkservers
+running on spinning disk.
+
+This patch-set adds a new configuration option (DISTANCE_PENALTY)
+that allows the admin to set a distance penalty for each chunkserver.
+This penalty will be added to *any* distance calculations made for the
+chunkserver, which (depending on its value and whether my previous
+distance calculation patch, #523, which is included as the first patch in this
+patch-set, has been applied) will make the chunkserver a less likely
+candidate for reads.
+
+This patch-set is now in production at our school, where I've configured
+all our spinning disks to have a penalty of 100, while all our SSDs have
+a penalty of 0 (the default).  Our VMs (which have some chunks on spinning
+disk due to changed goals of snapshots) are now *much* faster, because
+they only read from the spinning disks if the SSDs are unavailable.
+
+This patch-set does include a network protocol change that makes it
+incompatible with older LizardFS installs.  If there's any way for the
+chunkserver to tell older masters that they can ignore the
+LIZ_CSTOMA_REGISTER_PENALTY packet, or for the chunkserver to detect that
+the master doesn't recognize that packet, I would happily implement it.",9800119
+7,2017-02-24T16:50:50Z,2018-05-18T20:54:49Z,,,"Currently distance is calculated as 0 (same machine), 1 (same rack) and 2
+(different racks).  This doesn't allow any way of saying that rack 1 is
+closer to rack 2 than it is to rack 42.
+
+This patch changes the topology distance calculation by having different
+racks represented by the difference between the racks + 1 (since a
+distance of 1 means they're on the same rack).
+
+Rack 2 now has a distance of 2 from rack 1 (abs(2-1)+1=2) and a distance
+of 41 from rack 42 (abs(2-42)+1=41), which means clients on rack 2 will
+prefer chunk servers on rack 1.
+
+The implementation idea came from https://github.com/lizardfs/lizardfs/issues/269#issuecomment-106193955
+
+I've built and tested this patch on our local 3.10.6 cluster, and it functions as advertised.
+
+Signed-off-by: Jonathan Dieter <jdieter@lesbg.com>",9800119
+8,2016-10-17T20:37:05Z,2016-10-18T12:34:23Z,,,"Increase inode reuse delay from 1 day to 30 days. This makes it much harder to run into inode reuse issues, as I did in my cluster.
+",9800119
+9,2015-05-19T21:25:26Z,2015-05-21T16:44:00Z,,,"This adds the enhancement mentioned in #250.  It also improves the debian packaging a little bit.
+",9800119
+10,2020-03-27T10:31:15Z,2020-03-27T11:34:05Z,,,,161629033
+11,2020-03-23T10:12:03Z,2020-03-23T10:30:31Z,,,,161629033
+12,2020-01-11T06:40:24Z,2020-01-14T02:20:01Z,,,,161629033
+13,2020-03-19T22:11:49Z,2020-03-25T18:48:17Z,,,"Currently, we count *logical* cores when examining the host system. On systems that make use of hyper-threading (especially extreme cases like Xeon Phi), this can lead to accidental over-subscription issues.
+
+This PR changes `load_average_get_cpus()` to return the number of *physical* cores on the machine. For Macs, this is a simple change. For Linux, it requires some digging into `/sys`. I've tested a number of CPU configurations:
+- Single-socket, no HT (cclws20)
+- Single socket, HT (cclws19)
+- Multi-socket, no HT (crcfe02)
+- Multi-socket, HT (earth)
+
+From what I could find online, the Xeon Phi registers as a normal CPU with HT, but I don't think I have access to any real machines to test on.
+
+Resolves #2262",8759937
+14,2020-03-13T12:45:00Z,2020-03-25T15:37:18Z,,,There was an error where two of the splits were not being created/submitted as tasks. A simple fix is proposed here.,8759937
+15,2020-03-04T22:37:53Z,2020-03-04T22:37:53Z,,,"This PR reworks the `python_package_*` tools. For `python_package_create` and `python_package_run` I mostly fixed the sharp corners and cleaned generally cleaned things up. I more or less rewrote `python_package_analyze`, though. In particular,
+- Rather than just grepping the program text, I used the `ast` module to parse the code, which allows more control (e.g. only add imports from inside a function).
+- Switched the spec format to use that of `conda env export`, which can be fed directly to `conda env create`. This captures both Pip and Conda packages.
+- Rather than using the external dependency `stdlib_list`, I checked the path of each imported module against `{sys.prefix}/pythonX.Y/site-packages` to determine if Pip/Conda should know about it.
+- In some cases, the imported name does not match the package name in Pip/Conda (e.g. `ndcctools` provides `work_queue`). I put in more complicated logic to list package contents and try to match things up if using the name doesn't work.
+- In case of weird metapackage layouts, added a command line option for manually specifying which package provides a given import name.
+- Prints a warning if a package can't be found. This could indicate a weird name/layout, or something installed outside the Conda environment.
+
+It's been working for me under a variety of packaging setups, and can handle a lot more than the original implementation. Unfortunately, the performance is worse (since we have to list the full contents of all packages). We might make this extra (expensive) check optional so that users can just manually specify packages when the names don't match up.",8759937
+16,2020-02-18T16:32:41Z,2020-03-25T14:11:16Z,,,"@trshaffer From your code I renamed it to work_queue.Factory, made a distinction between command line only and config file options, and made some variables and functions class attributes.
+
+Let me know if it still works as you intended.",8759937
+17,2019-12-21T19:00:06Z,2020-03-13T14:37:18Z,,,,8759937
+18,2019-08-12T20:27:33Z,2019-08-13T14:16:29Z,,,"This is a first pass at cleaning up the test suite to operate external to the build system.  I didn't convert all the tests in one pass, but did a handful to test the idea.  I'm attempting to minimize what each component knows about the whole system, so it ought to be possible to run the test suite on a build that came via pip, conda, spack, etc without knowing the config.mk that came out of that build.
+
+Here is the idea:
+
+1 - Each test operates independently and expects that the appropriate `PATH`, `PYTHONPATH`, etc has already been set to point to the target test installation.  The test only uses assets in the cwd and relies on binaries, etc already being in the path. If it needs to compile something, it uses `CCTOOLS_COMPILE` or `CCTOOLS_COMPILE_STDIN` to invoke the compiler appropriately.
+
+2 - `test_runner_common.sh` expects only `CCTOOLS_INSTALL_DIR` to be set, and uses that to construct an appropriate `PATH`, `PYTHONPATH`, etc for each test.  `CCTOOLS_COMPILE` is defined to use `CCTOOLS_INSTALL_DIR` to find `include`, `lib`, etc.
+
+3 - `run_all_tests.sh` does not attempt to parse `config.mk` but just relies on `CCTOOLS_INSTALL_DIR` being set, and then invokes all of the tests.  (Still need to pass in what subset of tests to run somehow.)
+
+@btovar @trshaffer  does this seem like a sensible approach?
+Anything missing here?
+",8759937
+19,2019-07-16T14:10:44Z,2019-07-16T14:10:55Z,,,"Splits catalog history into multiple databases on the fly, one for each record type.
+Still needs a conversion routine to move the old format into the new format.
+Addresses #2016 ",8759937
+20,2019-03-29T15:19:10Z,2019-04-04T17:02:58Z,,,Supersedes #2033 ,8759937
+21,2020-03-27T12:13:41Z,2020-03-27T12:23:13Z,,,`isEmpty` was backwards.,43645564
+22,2020-03-24T18:45:49Z,2020-03-25T22:09:33Z,,,Allows for LHCbTransform to chain input data with LocalFile in case of batch running.,43645564
+23,2020-02-29T17:37:53Z,2020-03-09T00:41:50Z,,,Ref: #1592 #1588,43645564
+24,2020-02-12T07:56:04Z,2020-02-12T07:56:04Z,,,,43645564
+25,2019-11-13T16:52:35Z,2019-11-13T16:52:35Z,,,Testing GitHub Actions,43645564
+26,2019-11-01T14:08:05Z,2020-02-19T09:42:54Z,,,,43645564
+27,2019-06-13T07:14:56Z,2020-02-19T09:20:21Z,,,,43645564
+28,2018-10-05T16:16:40Z,2019-01-10T13:11:58Z,,,"Fixes #1350 .
+
+This just collects together all the input data and the input sandboxes from the subjobs. The assumption is that should reflect the splitter output for any splitter/RT handler. We either split by dataset or by arguments which changes the run script in the sandbox.
+
+The GaudiExec RT handler now needs some adjustment as all the run scripts end up together but with different names (i.e. different executables).
+
+There is a lot of other code floating about for parametric submission - do we want to get rid of that (in another PR)?",43645564
+29,2020-03-26T16:52:16Z,2020-03-26T17:58:09Z,,,,106382269
+30,2020-03-23T20:05:59Z,2020-03-23T21:29:49Z,,,,106382269
+31,2020-03-19T14:37:57Z,2020-03-22T06:12:39Z,,,,106382269
+32,2020-03-18T20:13:43Z,2020-03-18T21:44:30Z,,,,106382269
+33,2020-02-24T09:41:00Z,2020-02-24T09:41:00Z,,, to allow sigint when terminating,106382269
+34,2020-02-24T08:53:46Z,2020-02-25T20:20:23Z,,,,106382269
+35,2020-01-21T21:17:13Z,2020-01-21T21:23:14Z,,,,106382269
+36,2019-12-28T10:08:49Z,2019-12-28T10:08:49Z,,,,106382269
+37,2019-12-19T20:19:46Z,2019-12-24T20:13:23Z,,,,106382269
+38,2019-12-12T15:05:34Z,2019-12-12T15:40:52Z,,,,106382269
+39,2019-12-12T03:31:10Z,2019-12-14T10:11:53Z,,,"Hi, Spark dataframe does only support append or overwrite data. I implement a  simple JdbcUpsertWriter to upsert data in relation database. It will check whether the  dataframe row exists in database. If the row exists,generates an UPDATE statement and if row does not exists, creates an INSERT statement.",106382269
+40,2019-07-14T06:52:31Z,2019-07-14T06:52:59Z,,,…kku classes,106382269
+41,2019-07-01T22:25:32Z,2019-07-12T13:03:00Z,,,,106382269
+42,2020-03-27T12:28:36Z,2020-03-27T12:30:16Z,,,"Fixes to Mac BOINC 7.14.3:
+
+Add missing source file _clientscr/gfx_cleanup.mm_. This was included in the 7.14.3 release, but somehow it was never added to the `client_release/7/7.14 branch`.
+
+Mac: Prevent OS X Mojave from trying to display BOINC Manager in Dark Mode, since BOINC does not yet support Dark Mode. This was not included in the the 7.14.3 release.
+
+
+
+",30260406
+43,2020-03-27T11:13:49Z,2020-03-27T12:20:00Z,,,"Signed-off-by: Vitalii Koshura <lestat.de.lionkur@gmail.com>
+",30260406
+44,2020-03-26T18:54:07Z,2020-03-27T00:59:58Z,,,"Fixes #3529
+
+**Description of the Change**
+
+Copy dependencies into boinc source tree as git submodules, in order to automate more of the developer environment setup process.
+
+Pros: Dramatically simplifies and organizes dependency management.
+
+Cons: Some CI systems and network environments have difficulty using git submodules.
+
+TODO:
+
+We still need to configure the build system to look in these directories for the dependencies. The current setup expects the dependency directories to appear alongside the top-level boinc directory, whereas the new structure would nest dependencies inside boinc/vendor/<lib>.
+
+We should also update the build documentation, to reflect the fact that the dependencies are managed using the git submodule system, as opposed to manual file and folder munging.
+
+**Alternate Designs**
+
+* We could use a prominent, cross-platform C/C++ package manager, such as vcpkg.
+
+Pros: Free, open source, reasonably mature.
+
+Cons: Some limited support for more obscure platforms such as Illumos, Haiku, DragonflyBSD.
+
+* We could also copy the source trees more directly, using archive files and cryptographic checksums to validate contents.
+
+Pros: More resilient to external outages.
+
+Cons: More cumbersome to manage than git submodules. Binary blobs make the source tree larger. Involves a little shell script glue code to validate and extract dependencies during the build process.
+
+**Release Notes**
+
+Track C/C++ library dependencies as git submodules",30260406
+45,2020-03-26T18:25:27Z,2020-03-27T00:42:46Z,,,"Fixes #3527
+
+**Description of the Change**
+
+Move build steps from PDF and RTF stylized documents into more maintainable plain text (e.g. Markdown) document.
+
+**Release Notes**
+
+Format development documentation as plain text (Markdown)",30260406
+46,2020-03-25T10:57:38Z,2020-03-27T03:11:21Z,,,"Fixes #
+
+**Description of the Change**
+Add instrumented tests for the classes that implement the Parcelable interface. These tests are run on Android devices or emulators and can thus be used to identify any issues that will negatively impact real-world usage of the app.
+
+**Release Notes**
+N/A
+",30260406
+47,2020-03-24T06:27:31Z,2020-03-25T15:36:48Z,,,"Fixes #
+
+**Description of the Change**
+Add code to create a notification channel with the ID ""main-channel"", which is specified as the channel ID for BOINC notifications. This is required on Android Oreo and later; otherwise, notifications will not be displayed.
+
+**Release Notes**
+Fix display of notifications on Android Oreo and later.
+",30260406
+48,2020-03-15T20:07:13Z,2020-03-15T20:35:43Z,,,I repeatedly get an error message that I presume to have this origin - just don't let me guess. ,30260406
+49,2020-03-10T19:39:39Z,2020-03-26T16:36:07Z,,,"I've started using Science United in my BOINC client recently and noticed that some projects still use HTTP, although they seem to support HTTPS.
+I checked URLs of that projects and updated them to use HTTPS where it is possible.
+
+There are a couple of projects which does not support HTTPS:
+* Enigma@Home;
+* Gerasim@Home;
+* SRBase;
+* CAS@home;
+* Radioactive@Home.
+
+And there were a couple of URLs that were moved permanently (HTTP 301), I did not update them though.
+I remember these two ones:
+* https://einstein.phys.uwm.edu/ -> https://einsteinathome.org/uk/home;
+* https://denis.usj.es/denisathome/ -> https://denis.usj.es/en_US/.
+
+Fixes #
+
+**Description of the Change**
+<!-- We must be able to understand the design of your change from this description. -->
+
+**Alternate Designs**
+<!-- Explain what other alternates were considered and why the proposed version was selected -->
+
+**Release Notes**
+<!--
+Please describe the changes in a single line that explains this improvement in terms that a user can understand.
+This text will be used in BOINC's release notes.
+If this change is not user-facing or notable enough to be included in release notes you may use the string ""N/A"" here. -->
+",30260406
+50,2020-02-28T17:37:13Z,2020-03-16T12:03:03Z,,,"I had a problem running that code on ""ash"" on OpenWRT. No idea what could possibly be wrong about it, but since there is no need for that piece of code, it should just go IMHO.",30260406
+51,2020-02-24T06:42:08Z,2020-02-24T06:42:09Z,,,,30260406
+52,2020-02-19T06:13:06Z,2020-02-19T07:23:50Z,,,"Fixes #3393 
+
+**Description of the Change**
+Allow customizing $BOINC_OPTS in systemd unit files
+<!-- We must be able to understand the design of your change from this description. -->
+
+**Alternate Designs**
+N/A - Trivial change
+<!-- Explain what other alternates were considered and why the proposed version was selected -->
+
+**Release Notes**
+Allow systemd startup to be customized via /etc/systemd/system unit file
+<!--
+Please describe the changes in a single line that explains this improvement in terms that a user can understand.
+This text will be used in BOINC's release notes.
+If this change is not user-facing or notable enough to be included in release notes you may use the string ""N/A"" here. -->
+",30260406
+53,2020-02-04T22:10:28Z,2020-03-26T16:36:59Z,,,"... and have scheduler report server version, not client version",30260406
+54,2020-01-20T11:05:52Z,2020-01-29T07:32:13Z,,,Signed-off-by: Vitalii Koshura <lestat.de.lionkur@gmail.com>,30260406
+55,2019-12-24T18:17:21Z,2019-12-24T23:41:54Z,,,"Fixes #2957 
+
+**Description of the Change**
+Whenever BOINC main() polls to generate the list of tasks to run - and the order in which to run them - any tasks that are at risk of slipping past its deadline (as simulated by BOINC) is excluded.
+
+This is a WIP and simply adds the logic to exclude a task from being scheduled if the result is simulated to likely slip past the deadline. I will work on the user configuration option next, e.g. ""Exclude jobs if it is at risk of missing its deadline (Y/N)""?
+
+**Alternate Designs**
+The original Feature Request was to add an option to explicitly **abort** a task. In my view, this is a cleaner solution to the problem the Feature Request is looking to solve. It relies on the existing, underlying logic for scheduling, prioritizing, and clean-up of tasks, i.e. nothing is explicitly aborted, only excluded from the run list. Thus, the only change would be in the logic applied in cpu_sched->can_schedule().
+
+**Release Notes**
+Add user-configurable option to exclude tasks that are likely to miss their deadline from being scheduled to run.
+",30260406
+56,2019-12-13T21:15:35Z,2020-01-13T08:53:18Z,,,"Fixes #2115
+
+**Description of the Change**
+Added a new column -- ""Estimated Completion"" -- to the Advanced > Tasks screen to show the calculated date and time by which a task should complete. It is positioned immediately next to the existing ""Deadline"" column to make it easier for users to visually assess which task(s) may not complete by the deadline.
+
+**Alternate Designs**
+I opted to design ""estimated completion"" as a derived field. It is calculated as ""current date and time"" + ""remaining time"". Therefore, I opted to *not* add a new saved field to the data model for it.
+
+Also, the original issue (#2115) had specified another new field to be added, to explicitly calculate and display the delta between the estimated completion date/time and the deadline date/time. However, it is my opinion that this additional field is not necessary and that having the estimated completion date/time displayed right next to the deadline date/time is enough information for a user to assess whether a task is likely to complete by the deadline, or not. Therefore, I opted to not implement this part of the issue for now.
+
+**Release Notes**
+Added ""Estimated Completion"" as a new column in Advanced view > Tasks to show the date and time by which a task should complete.
+",30260406
+57,2019-12-02T10:10:47Z,2020-01-02T10:49:48Z,,,"Moving the max_cpus check to address #3386.
+
+The max_cpus preference is used to set the maximum number of CPUs (threads) to be used by a VM application.",30260406
+58,2019-11-14T15:28:49Z,2019-11-14T15:31:06Z,,,"Fixes #
+
+**Description of the Change**
+Slight changes to the heading of the docs to initiate Pull
+
+**Alternate Designs**
+Couldn't see any alternatives as original commits don't seem to have amdeit
+
+**Release Notes**
+N/A
+",30260406
+59,2019-10-30T21:51:06Z,2019-10-31T00:12:00Z,,,"Fixes #3356
+
+**Description of the Change**
+Added these 4 fields to both the app_version table and the host_app_version table:
+`runtime_n`
+`runtime_avg`
+`cputime_n`
+`cputime_avg`
+Modified validator to track the values.  Added the necessary function to db_update to make the database change.  Added average run time and cpu time columns to the apps.php page.
+
+**Release Notes**
+Adds fields to database to track average run times by application version.  Modifies apps.php to display the average run times and cpu times.
+",30260406
+60,2019-10-20T13:25:13Z,2019-12-10T20:53:45Z,,,"fixes #3340 
+
+show_connect_error improperly obtained the ip address of the non-allowed system.  This was fixed by using source code from hostinfo_network.cpp as suggested in issue #3340 ",30260406
+61,2019-10-08T22:16:38Z,2019-10-09T14:30:58Z,,,"Fixes #
+
+**Description of the Change**
+
+Combine the rpc:query_batches and rpc:query_batch procedures into a single rpc:query_batches_status procedure.  The combination eliminates redundant updating of workunit status in the database.  When querying on the order of 100K workunits the time to complete the query was reduced by  factor of 10.
+
+**Alternate Designs**
+
+**Release Notes**
+
+Added streamlined procedure for querying job status through the submit_rpc.
+
+
+",30260406
+62,2019-09-25T18:59:19Z,2019-10-31T17:33:46Z,,,"**Description of the Change**
+On Windows, CreateProcess() is used to launch tasks, but this on its own does not handle child processes; if the parent task process exits, the workunit will be terminated. If <wait_for_children> is set in the job file, attach the task process to a job object instead, which can then be monitored to determine when all child processes are finished.
+
+**Alternate Designs**
+<!-- Explain what other alternates were considered and why the proposed version was selected -->
+
+**Release Notes**
+<!--
+Please describe the changes in a single line that explains this improvement in terms that a user can understand.
+This text will be used in BOINC's release notes.
+If this change is not user-facing or notable enough to be included in release notes you may use the string ""N/A"" here. -->
+Add <wait_for_children> option for tasks in job.xml",30260406
+63,2019-09-10T13:09:38Z,2020-03-20T18:12:13Z,,,"This patch is with Debian for a really long time, likely to have its origins also in the cppcheck and/or clang runs. Just like PR https://github.com/BOINC/boinc/pull/3284, this also addresses the reported leaking of file descriptors (https://github.com/BOINC/boinc/issues/1175).
+
+Anchor: https://github.com/BOINC/boinc/issues/3260",30260406
+64,2019-09-10T12:33:21Z,2019-09-10T12:33:21Z,,,Anchor: https://github.com/BOINC/boinc/issues/3260,30260406
+65,2019-09-10T12:21:53Z,2019-09-11T10:59:45Z,,,"Trivial thing. Should also help to get better reports by users when they experience something exceptional.
+
+Anchor: https://github.com/BOINC/boinc/issues/3260",30260406
+66,2019-09-10T12:14:26Z,2020-03-26T18:56:57Z,,,"Linux has a maximal length of paths. Other platforms, notably HURD,
+are unlimited in the length of their paths and filenames.
+This patch (and there have been others before) allow to compile
+and use BOINC on such technically advanced(?) OSs by simply imposing
+the same maximal path length as for Linux.
+
+Anchor: https://github.com/BOINC/boinc/issues/3260",30260406
+67,2019-09-10T12:06:36Z,2019-10-15T08:47:17Z,,,"This is another one of the concerns that cppcheck raised. If the the memory that ""we"" own is not extendable, then this is likely an out of memory situation to which BOINC should possibly react nicely as nicely as it can. That patch meant to prevent a memory leak in low-memory situations. It does not look nice, admittedly. Maybe someone else has a constructive idea about it.
+
+Anchor: https://github.com/BOINC/boinc/issues/3260",30260406
+68,2019-09-10T11:47:00Z,2019-12-19T21:31:50Z,,,"Another very old patch with Debian, again one that originated from invoking cppcheck on the source tree.
+
+The exact cppcheck warning I don't recall. I would have expected the iterator to know about how to properly terminate itself before going through the next iteration. The indentiation of the code is disturbed by the extra blocks to minimize the size of the patch. Alternatively, ""it"" could be renamed or the indentiation be updated.
+
+Personally, I do not like this patch too much since the exact need to have to declarations of the iterator is not immediately apparent. A comment would be nice at least. But I very much like not to declare an iterator at the beginning of a function that is only needed in a branch of the code. So, I expect a bit of a discussion about this patch and confidently expect this code to improve over it.
+
+Anchor: https://github.com/BOINC/boinc/issues/3260
+",30260406
+69,2019-09-10T10:44:09Z,2019-11-20T12:47:15Z,,,"This was once found by cppcheck and lives for a long time in
+the Debian distribution. The decrypt_public function should set the data
+attribute, so this is of no functional danger. But as much
+as this irritated cppcheck, a human reader is confused at first
+sight. Also, at some point the function called may be happy to
+know that it is not overwriting a string or the well-defined
+string helps some debug output.
+
+Most notably, with this patch, the final copy will always copy
+reasonable data, even if the decrypt_public function changes its return
+codes.
+
+Anchor: https://github.com/BOINC/boinc/pull/3276",30260406
+70,2019-08-29T13:29:03Z,2019-10-10T12:26:35Z,,,"This patch is about 7 years old in Debian. I don't recally the exact original. Typically the compiler warns about something or say, the (admittedly, mostly irrelelvant) Hurd platform does not have a limit in the maxpathlen and so one has a look into that.
+
+The patch is about using MAXPATHLEN both to limit the number of bytes copied into a char[] and to prepare the size of the char[]s for it. When there are MAXPATHLEN characters allowed, a buffer needs MAXPATHLEN+1 characters max because of the terminating 0. snprintf adds the terminating 0 itself and the ""n"" in snprintf helps to avoid buffer overruns.
+
+When looking at this code, I wish the boinc_getcwd would be allowed to fail. It happens all the time to me that I have removed a directory that I was still in with another shell. And the same could well happen with some magic performed on the /var partition or whatever magic all these clouds and containers may now be preparing to come up with. This has not been addressed in this patch but should possibly be addressed as a separate issue.
+
+Anchor: https://github.com/BOINC/boinc/issues/3260",30260406
+71,2019-08-26T17:21:27Z,2019-09-25T14:33:06Z,,,"Hello,
+
+Please grant this patch some scrutiny that is meant to address (bits of) https://github.com/BOINC/boinc/issues/3241 and may continue work in https://github.com/BOINC/boinc/pull/2477 .
+
+The 'from __future__ import print_function' likely preserves compatibility with Python2. I suggest to add this until the transition to Python3 is completed.
+
+Best,
+Steffen",30260406
+72,2019-08-23T14:58:48Z,2019-09-06T07:40:41Z,,,"Fixes # https://github.com/BOINC/boinc/issues/3256
+
+**Description of the Change**
+<!-- We must be able to understand the design of your change from this description. -->
+Give the possibility to the validator to set `result.runtime_outlier=true` all the compared results based on the content of the results after validation. This can be achieved via removing tagging the second result in `compare_results` as `const`.
+
+**Alternate Designs**
+<!-- Explain what other alternates were considered and why the proposed version was selected -->
+Setting `result.runtime_outlier=true` could be performed outside of `files_match`, but this would have implied either to store the value of the flag in a temporary variable and use it somewhere else, or parse again the validation file.
+
+**Release Notes**
+<!--
+Please describe the changes in a single line that explains this improvement in terms that a user can understand.
+This text will be used in BOINC's release notes.
+If this change is not user-facing or notable enough to be included in release notes you may use the string ""N/A"" here. -->
+Give the possibility to the validator to set `result.runtime_outlier=true` all the compared results based on the content of the results after validation.",30260406
+73,2019-07-11T14:34:58Z,2019-09-20T07:14:47Z,,,From PR #3179,30260406
+74,2019-07-04T04:43:58Z,2019-09-25T11:28:51Z,,,"Added popup menu for Projects, Work and Transfers tabs.
+
+This fixes #602
+
+Signed-off-by: Vitalii Koshura <lestat.de.lionkur@gmail.com>
+",30260406
+75,2018-11-18T14:49:03Z,2020-03-27T09:36:16Z,,,"Fixes #2779 - DON'T MERGE, REFERENCE ONLY
+
+**Description of the Change**
+Remove excessive privileges and unnecessary user accounts created by boinc on windows.
+
+**Implementation state**
+
+- [x] Use virtual account instead of boinc_master
+- [x] Remove boinc_master on update
+- [ ] Make boinc.exe drop privileges from it's access token on startup. Currently it doesn't remove ""SeImpersonatePrivilege"", ""SeAssignPrimaryTokenPrivilege"", ""SeShutdownPrivilege"", and some other non required privileges.
+![image](https://user-images.githubusercontent.com/2544867/48673814-afd45880-eb45-11e8-8df2-efb31841cac2.png)
+- [ ] Make boinc.exe lower it's integrity level, currently boinc and its sub processes run with highest available integrity ""high"", the process should automatically lower it to the minimum required integrity level, currently this seems to be ""medium"". https://msdn.microsoft.com/en-us/library/bb625963.aspx
+- [x] Make boinc projects run with low integrity https://msdn.microsoft.com/en-us/library/bb625960.aspx
+- [ ] Make boinc projects run as another windows service (one per project) and use virtual accounts there too.
+- [ ] Evaluate compatibility to operating systems < Win7. They are out of support anyway, so can thay be eventually be dropped entirely?
+
+**Release Notes**
+Remove excessive privileges and unnecessary user accounts created by boinc on windows.",30260406
+76,2020-03-24T10:52:42Z,2020-03-24T16:42:33Z,,,"## Description
+
+Just small fix. In considering we are using `nn.DataParallel` we should call `.config` through `model.module.config`
+
+## Related Issue
+
+https://github.com/catalyst-team/catalyst/issues/700
+
+## Type of Change
+
+<!-- Mark with an `x` all the checkboxes that apply (like `[x]`) -->
+
+- [ ] Examples / docs / tutorials / contributors update
+- [x] Bug fix (non-breaking change which fixes an issue)
+- [ ] Improvement (non-breaking change which improves an existing feature)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to change)
+
+## Checklist
+
+<!-- Mark with an `x` all the checkboxes that apply (like `[x]`) -->
+
+- [x] I have read the [Code of Conduct](https://github.com/catalyst-team/catalyst/blob/master/CODE_OF_CONDUCT.md) document.
+- [x] I have read the [Contributing](https://github.com/catalyst-team/catalyst/blob/master/CONTRIBUTING.md) guide.
+- [ ] I have checked the code-style using `make check-codestyle`.
+- [ ] I have written tests for all new methods and classes that I created.
+- [ ] I have written the docstring in Google format for all the methods and classes that I used.
+- [ ] I have checked the docs using `make check-docs`.
+- [ ] I have read I need to click 'Login as guest' to see Teamcity build logs.
+",145385156
+77,2020-03-23T12:48:30Z,2020-03-24T10:49:08Z,,,"## Description
+
+Why should people get this warning if they don't use `alchemy`? I think it should be under the `if` statement just as `Neptune`.
+
+Fast example screenshot:
+![image](https://user-images.githubusercontent.com/9883873/77356815-167c0e80-6d58-11ea-8c30-b7fdea34c055.png)
+
+
+## Type of Change
+
+<!-- Mark with an `x` all the checkboxes that apply (like `[x]`) -->
+
+- [ ] Examples / docs / tutorials / contributors update
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [x] Improvement (non-breaking change which improves an existing feature)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to change)
+
+## Checklist
+
+<!-- Mark with an `x` all the checkboxes that apply (like `[x]`) -->
+
+- [x] I have read the [Code of Conduct](https://github.com/catalyst-team/catalyst/blob/master/CODE_OF_CONDUCT.md) document.
+- [x] I have read the [Contributing](https://github.com/catalyst-team/catalyst/blob/master/CONTRIBUTING.md) guide.
+- [ ] I have checked the code-style using `make check-codestyle`.
+- [ ] I have written tests for all new methods and classes that I created.
+- [ ] I have written the docstring in Google format for all the methods and classes that I used.
+- [ ] I have checked the docs using `make check-docs`.
+- [x] I have read I need to click 'Login as guest' to see Teamcity build logs.
+",145385156
+78,2020-02-25T11:27:52Z,2020-03-24T11:25:38Z,,,"## Description
+
+Fixed storing gradients in OptimizerCallback
+
+## Related Issue
+
+<!-- If your PR refers to a related issue, link it here. -->
+
+## Type of Change
+
+<!-- Mark with an `x` all the checkboxes that apply (like `[x]`) -->
+
+- [ ] Examples / docs / tutorials / contributors update
+- [x] Bug fix (non-breaking change which fixes an issue)
+- [ ] Improvement (non-breaking change which improves an existing feature)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to change)
+
+## Checklist
+
+<!-- Mark with an `x` all the checkboxes that apply (like `[x]`) -->
+
+- [x] I have read the [Code of Conduct](https://github.com/catalyst-team/catalyst/blob/master/CODE_OF_CONDUCT.md) document.
+- [x] I have read the [Contributing](https://github.com/catalyst-team/catalyst/blob/master/CONTRIBUTING.md) guide.
+- [x] I have checked the code-style using `make check-codestyle`.
+- [x] I have written tests for all new methods and classes that I created.
+- [x] I have written the docstring in Google format for all the methods and classes that I used.
+- [x] I have checked the docs using `make check-docs`.
+- [x] I have read I need to click 'Login as guest' to see Teamcity build logs.
+",145385156
+79,2020-02-17T10:37:34Z,2020-03-13T18:26:42Z,,,"## Description
+REOPENED
+I've added wandb.watch(model) to _pre_experiment_hook and extend _log_metric interface with
+step
+
+## Related Issue
+
+#656 
+
+## Type of Change
+
+<!-- Mark with an `x` all the checkboxes that apply (like `[x]`) -->
+
+- [ ] Examples / docs / tutorials / contributors update
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [x] Improvement (non-breaking change which improves an existing feature)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to change)
+
+## Checklist
+
+<!-- Mark with an `x` all the checkboxes that apply (like `[x]`) -->
+
+- [x] I have read the [Code of Conduct](https://github.com/catalyst-team/catalyst/blob/master/CODE_OF_CONDUCT.md) document.
+- [x] I have read the [Contributing](https://github.com/catalyst-team/catalyst/blob/master/CONTRIBUTING.md) guide.
+- [x] I have read I need to click 'Login as guest' to see Teamcity build logs
+- [x] I have checked the code-style using `make check-codestyle`.
+- [ ] I have written the docstring in Google format for all the methods and classes that I used.
+- [ ] I have checked the docs using `make check-docs`.",145385156
+80,2020-02-12T18:41:01Z,2020-03-21T19:14:00Z,,,"## Description
+
+Addition of tutorial for GANs in Notebook API.
+
+## Related Issue
+
+This is a clone of PR #653
+
+## Type of Change
+
+<!-- Mark with an `x` all the checkboxes that apply (like `[x]`) -->
+
+- [x] Examples / docs / tutorials / contributors update
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] Improvement (non-breaking change which improves an existing feature)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to change)
+
+## Checklist
+
+<!-- Mark with an `x` all the checkboxes that apply (like `[x]`) -->
+
+- [x] I have read the [Code of Conduct](https://github.com/catalyst-team/catalyst/blob/master/CODE_OF_CONDUCT.md) document.
+- [x] I have read the [Contributing](https://github.com/catalyst-team/catalyst/blob/master/CONTRIBUTING.md) guide.
+- [x] I have read I need to click 'Login as guest' to see Teamcity build logs
+- [x] I have checked the code-style using `make check-codestyle`.
+- [ ] I have written the docstring in Google format for all the methods and classes that I used.
+- [x] I have checked the docs using `make check-docs`.",145385156
+81,2019-02-12T13:42:33Z,2019-03-14T17:15:59Z,,,,50505775
+82,2020-03-26T20:50:37Z,2020-03-26T20:50:37Z,,,"Running `git status` or `git ls-files` on a deployed instance of
+hashtopolis is noisy, because working files show up as untracked.
+
+This commit gitignores everything but .htaccess and .gitignore in
+
+src/files/
+src/import/
+src/log/
+src/tmp/",73367610
