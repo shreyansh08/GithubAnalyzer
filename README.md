@@ -11,16 +11,17 @@ json
 requests   
 sqlite3    
 
+Use this link (https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) to generate personal access token of your GitHub profile.     
 
-For running the first part of tool (generating data-set according to topic and input parameters),
-Go to folder \uiBackEnd.     
-There are 6 files temp.json, temp1.json, temp2.json, temp3.json, temp4.json, temp5.json     
-Each of the json files has 2 empty entries, username and password.       
-Take 6 github account usernames and their personal access tokens and store them in each of the files. To generate access code for your account, follow this link (https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line). Alternatively, you can also use your github password in place of using a personal access token, but that is not a recommended practise and should be avoided.      
-Run the tool using the command: python ui.py    
-Input all the needed inputs and run the script.   
      
-For running the second and third part of tool (generating single repository analysis or generating data about a single user),    
+For running the second part of tool (generating single repository analysis),     
 Run the tool using the command: python ui.py     
-Select the option (Single Repository or Single User) and input username and personal access token.   
-Choose if you want to include private repositories.    
+If you want details about other user’s repositories, input their username in Username (repository owner).     
+Input your own username and personal access token in the next 2 fields.       
+Choose if you want to include private repositories. If you choose to include private repositories, you would need to have both Username and Username (repository owner) to be the same.      
+         
+For running the third part of tool (generating data about a single user),      
+Run the tool using the command: python ui.py      
+If you want details about other user, input their username in Username (search user).     
+Input your own username and personal access token in the next 2 fields.       
+Choose if you want to include private repositories. If you choose to include private repositories, you would need to have both Username and Username (search user) to be the same.
