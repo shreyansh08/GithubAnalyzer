@@ -163,7 +163,7 @@ def choiceOfRepo(value,auth,root):
     root.destroy()
     return
 
-def singleRepoAnalysis(username,password,privateR):
+def singleRepoAnalysis(repoowner,username,password,privateR):
 
     choice = privateR
 
@@ -175,7 +175,7 @@ def singleRepoAnalysis(username,password,privateR):
         tk.messagebox.showwarning('Error',mess)
         return
                  
-    data = requests.get('https://api.github.com/users/' + username,auth = auth)
+    data = requests.get('https://api.github.com/users/' + repoowner,auth = auth)
     data = data.json()
 
     if choice == 0:

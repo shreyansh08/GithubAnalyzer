@@ -23,7 +23,7 @@ def makeform(root):
     labs.append(lab)
     return labs
 
-def singleUserAnalysis(username,password,privateR):
+def singleUserAnalysis(mainuser,username,password,privateR):
 
     root = tk.Tk()
     labs = makeform(root)
@@ -39,13 +39,13 @@ def singleUserAnalysis(username,password,privateR):
         tk.messagebox.showwarning('Error',mess)
         return
     
-    data = requests.get('https://api.github.com/users/' + username,auth = auth)
+    data = requests.get('https://api.github.com/users/' + mainuser,auth = auth)
     data = data.json()
 
     lab["text"] = "Fetching User Details ..."
     root.update()
 
-    print("Information about user {}:\n".format(username))
+    print("Information about user {}:\n".format(mainuser))
     print("Name: {}".format(data['name']))
     print("Email: {}".format(data['email']))
     print("Public repos: {}".format(data['public_repos']))
@@ -156,7 +156,7 @@ def singleUserAnalysis(username,password,privateR):
 
     print(repos_df)
 
-    repos_df.to_csv(username + '_repos_info.csv', index = None)
+    repos_df.to_csv(mainuser + '_repos_info.csv', index = None)
 
     print('\n\n\n')
     print('Repowise Total Commits: ')
@@ -204,7 +204,7 @@ def singleUserAnalysis(username,password,privateR):
         print("Repo Name: {} --> Number of commits: {}".format(name, sum))
 
     commits_df = pd.DataFrame(commits_information, columns = ['Repo Id', 'Commit Id', 'Date', 'Message'])
-    commits_df.to_csv(username + '_commits_info.csv', index = False)
+    commits_df.to_csv(mainuser + '_commits_info.csv', index = False)
 
 
     languages = []
@@ -245,7 +245,7 @@ def singleUserAnalysis(username,password,privateR):
     plt.legend(patches,labels,loc="best")
     plt.axis('equal')
     plt.tight_layout()
-    filepath = username+"-languages"
+    filepath = mainuser+"-languages"
     plt.savefig(filepath)
 
     print('Languagewise Total Lines Of Data: ')
@@ -322,7 +322,7 @@ def singleUserAnalysis(username,password,privateR):
             
     print('Repowise Per User Contribution: ')
     print('\n')
-    filename = username + 'contributors.csv'
+    filename = mainuser + 'contributors.csv'
     contributor_repo_df = pd.DataFrame(for_csv, columns=['LoginId','Contributions','Id']) 
     contributor_repo_df.to_csv(filename)
     print(contributor_repo_df)
@@ -338,6 +338,7 @@ def singleUserAnalysis(username,password,privateR):
     # print('\n')
     # print(data)
 
-    mess = "All data saved in the folder. Please check " + username + ".png to find prominent languages."
+    mess = "All data saved in the folder. Please check " + mainuser + ".png to find prominent languages."
     tk.messagebox.showinfo("Finished !",mess)
+    root.destroy()
     return
