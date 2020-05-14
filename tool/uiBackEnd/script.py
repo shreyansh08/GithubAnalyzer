@@ -32,7 +32,7 @@ def code(topic,nStars,nForks,nContr,nRel):
     
 	root.update()
 
-	cred = json.loads(open('temp.json').read())
+	cred = json.loads(open('uiBackEnd/temp.json').read())
 	authDetails = HTTPBasicAuth(cred['username'], cred['password'])
 
 	session = requests.Session()
@@ -220,37 +220,37 @@ def code(topic,nStars,nForks,nContr,nRel):
 	for x in range(6):
 
 		if(x == 0):
-			cred = json.loads(open('temp.json').read())
+			cred = json.loads(open('uiBackEnd/temp.json').read())
 			authDetails = HTTPBasicAuth(cred['username'], cred['password'])
 
 			session = requests.Session()
 			session.auth = (authDetails.username,authDetails.password) 
 		elif(x == 1):
-			cred = json.loads(open('temp1.json').read())
+			cred = json.loads(open('uiBackEnd/temp1.json').read())
 			authDetails = HTTPBasicAuth(cred['username'], cred['password'])
 
 			session = requests.Session()
 			session.auth = (authDetails.username,authDetails.password)	
 		elif(x == 2):
-			cred = json.loads(open('temp2.json').read())
+			cred = json.loads(open('uiBackEnd/temp2.json').read())
 			authDetails = HTTPBasicAuth(cred['username'], cred['password'])
 
 			session = requests.Session()
 			session.auth = (authDetails.username,authDetails.password)	
 		elif(x == 3):
-			cred = json.loads(open('temp3.json').read())
+			cred = json.loads(open('uiBackEnd/temp3.json').read())
 			authDetails = HTTPBasicAuth(cred['username'], cred['password'])
 
 			session = requests.Session()
 			session.auth = (authDetails.username,authDetails.password)	
 		elif(x == 4):
-			cred = json.loads(open('temp4.json').read())
+			cred = json.loads(open('uiBackEnd/temp4.json').read())
 			authDetails = HTTPBasicAuth(cred['username'], cred['password'])
 
 			session = requests.Session()
 			session.auth = (authDetails.username,authDetails.password)	
 		else:
-			cred = json.loads(open('temp5.json').read())
+			cred = json.loads(open('uiBackEnd/temp5.json').read())
 			authDetails = HTTPBasicAuth(cred['username'], cred['password'])
 
 			session = requests.Session()
